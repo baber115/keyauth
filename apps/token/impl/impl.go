@@ -62,7 +62,6 @@ func (i *impl) Name() string {
 
 func (i *impl) Registry(server *grpc.Server) {
 	token.RegisterServiceServer(server, svr)
-	user.RegisterServiceServer(server, svr.user)
 }
 
 func init() {
