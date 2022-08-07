@@ -16,18 +16,18 @@ var (
 
 func newConfig() *Config {
 	return &Config{
-		App: newDefaultAPP(),
-		Log: newDefaultLog(),
-
+		App:   newDefaultAPP(),
+		Log:   newDefaultLog(),
+		Mysql: newDefaultMySQL(),
 		Mongo: newDefaultMongoDB(),
 	}
 }
 
 // Config 应用配置
 type Config struct {
-	App *app `toml:"app"`
-	Log *log `toml:"log"`
-
+	App   *app     `toml:"app"`
+	Log   *log     `toml:"log"`
+	Mysql *mysql   `toml:"mysql"`
 	Mongo *mongodb `toml:"mongodb"`
 }
 
@@ -101,9 +101,32 @@ func newDefaultLog() *log {
 	}
 }
 
+type mysql struct {
+	Host        string `toml:"host" env:"MYSQL_HOST"`
+	Port        string `toml:"port" env:"MYSQL_PORT"`
+	UserName    string `toml:"username" env:"MYSQL_USERNAME"`
+	Password    string `toml:"password" env:"MYSQL_PASSWORD"`
+	Database    string `toml:"database" env:"MYSQL_DATABASE"`
+	MaxOpenConn int    `toml:"max_open_conn" env:"MYSQL_MAX_OPEN_CONN"`
+	MaxIdleConn int    `toml:"max_idle_conn" env:"MYSQL_MAX_IDLE_CONN"`
+	MaxLifeTime int    `toml:"max_life_time" env:"MYSQL_MAX_LIFE_TIME"`
+	MaxIdleTime int    `toml:"max_idle_time" env:"MYSQL_MAX_IDLE_TIME"`
+	lock        sync.Mutex
+}
+
+func newDefaultMySQL() *mysql {
+	return &mysql{
+		Database:    "cmdb",
+		Host:        "127.0.0.1",
+		Port:        "3306",
+		MaxOpenConn: 200,
+		MaxIdleConn: 100,
+	}
+}
+
 func newDefaultMongoDB() *mongodb {
 	return &mongodb{
-		Database:  "",
+		Database:  "keyauth",
 		Endpoints: []string{"127.0.0.1:27017"},
 	}
 }
@@ -132,6 +155,7 @@ func (m *mongodb) Client() (*mongo.Client, error) {
 	return mgoclient, nil
 }
 
+// 建立连接后，需要指定访问的数据库
 func (m *mongodb) GetDB() (*mongo.Database, error) {
 	conn, err := m.Client()
 	if err != nil {
@@ -143,10 +167,12 @@ func (m *mongodb) GetDB() (*mongo.Database, error) {
 func (m *mongodb) getClient() (*mongo.Client, error) {
 	opts := options.Client()
 
+	// AuthSource 代表认证数据库，mongodb的用户针对DB
 	cred := options.Credential{
 		AuthSource: m.Database,
 	}
 
+	// 使用Password认证
 	if m.UserName != "" && m.Password != "" {
 		cred.Username = m.UserName
 		cred.Password = m.Password
@@ -156,12 +182,13 @@ func (m *mongodb) getClient() (*mongo.Client, error) {
 	opts.SetHosts(m.Endpoints)
 	opts.SetConnectTimeout(5 * time.Second)
 
-	// Connect to MongoDB
+	// Connect to MongoDB，惰性链接
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		return nil, fmt.Errorf("new mongodb client error, %s", err)
 	}
 
+	// 保证当前的链接是正常的，mongodb服务在线
 	if err = client.Ping(context.TODO(), nil); err != nil {
 		return nil, fmt.Errorf("ping mongodb server(%s) error, %s", m.Endpoints, err)
 	}

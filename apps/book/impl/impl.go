@@ -28,9 +28,10 @@ func (s *service) Config() error {
 	if err != nil {
 		return err
 	}
+	// 获取collection对象，通过collection对象，进行CRUD
 	s.col = db.Collection(s.Name())
-
 	s.log = zap.L().Named(s.Name())
+
 	return nil
 }
 
