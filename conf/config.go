@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/infraboard/mcenter/client/rpc"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -16,10 +17,11 @@ var (
 
 func newConfig() *Config {
 	return &Config{
-		App:   newDefaultAPP(),
-		Log:   newDefaultLog(),
-		Mysql: newDefaultMySQL(),
-		Mongo: newDefaultMongoDB(),
+		App:     newDefaultAPP(),
+		Log:     newDefaultLog(),
+		Mysql:   newDefaultMySQL(),
+		Mongo:   newDefaultMongoDB(),
+		Mcenter: rpc.NewDefaultConfig(),
 	}
 }
 
@@ -29,6 +31,8 @@ type Config struct {
 	Log   *log     `toml:"log"`
 	Mysql *mysql   `toml:"mysql"`
 	Mongo *mongodb `toml:"mongodb"`
+
+	Mcenter *rpc.Config `toml:"mcenter"`
 }
 
 type app struct {
@@ -194,4 +198,17 @@ func (m *mongodb) getClient() (*mongo.Client, error) {
 	}
 
 	return client, nil
+}
+
+func (c *Config) InitGlobal() error {
+	// 加载全局配置单例
+	global = c
+
+	// 提前加载好 mcenter客户端, 全局变量
+	err := rpc.LoadClientFromConfig(c.Mcenter)
+	if err != nil {
+		return fmt.Errorf("load mcenter client from config error: " + err.Error())
+	}
+
+	return nil
 }

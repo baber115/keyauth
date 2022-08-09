@@ -25,7 +25,7 @@ type ServiceClient interface {
 	// 颁发Token(Login)
 	IssueToken(ctx context.Context, in *IssueTokenRequest, opts ...grpc.CallOption) (*Token, error)
 	// 撤销Token(Logout)
-	RevolkToken(ctx context.Context, in *RevolkTokenRequest, opts ...grpc.CallOption) (*Token, error)
+	RevokeToken(ctx context.Context, in *RevokeTokenRequest, opts ...grpc.CallOption) (*Token, error)
 	// 校验Token的接口(内部服务使用)
 	ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*Token, error)
 	// 查询Token, 查询用于REST ful API访问颁发出去的Token
@@ -49,9 +49,9 @@ func (c *serviceClient) IssueToken(ctx context.Context, in *IssueTokenRequest, o
 	return out, nil
 }
 
-func (c *serviceClient) RevolkToken(ctx context.Context, in *RevolkTokenRequest, opts ...grpc.CallOption) (*Token, error) {
+func (c *serviceClient) RevokeToken(ctx context.Context, in *RevokeTokenRequest, opts ...grpc.CallOption) (*Token, error) {
 	out := new(Token)
-	err := c.cc.Invoke(ctx, "/keyauth.token.Service/RevolkToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/keyauth.token.Service/RevokeToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ type ServiceServer interface {
 	// 颁发Token(Login)
 	IssueToken(context.Context, *IssueTokenRequest) (*Token, error)
 	// 撤销Token(Logout)
-	RevolkToken(context.Context, *RevolkTokenRequest) (*Token, error)
+	RevokeToken(context.Context, *RevokeTokenRequest) (*Token, error)
 	// 校验Token的接口(内部服务使用)
 	ValidateToken(context.Context, *ValidateTokenRequest) (*Token, error)
 	// 查询Token, 查询用于REST ful API访问颁发出去的Token
@@ -98,8 +98,8 @@ type UnimplementedServiceServer struct {
 func (UnimplementedServiceServer) IssueToken(context.Context, *IssueTokenRequest) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IssueToken not implemented")
 }
-func (UnimplementedServiceServer) RevolkToken(context.Context, *RevolkTokenRequest) (*Token, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RevolkToken not implemented")
+func (UnimplementedServiceServer) RevokeToken(context.Context, *RevokeTokenRequest) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RevokeToken not implemented")
 }
 func (UnimplementedServiceServer) ValidateToken(context.Context, *ValidateTokenRequest) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
@@ -138,20 +138,20 @@ func _Service_IssueToken_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Service_RevolkToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RevolkTokenRequest)
+func _Service_RevokeToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).RevolkToken(ctx, in)
+		return srv.(ServiceServer).RevokeToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/keyauth.token.Service/RevolkToken",
+		FullMethod: "/keyauth.token.Service/RevokeToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).RevolkToken(ctx, req.(*RevolkTokenRequest))
+		return srv.(ServiceServer).RevokeToken(ctx, req.(*RevokeTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -204,8 +204,8 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Service_IssueToken_Handler,
 		},
 		{
-			MethodName: "RevolkToken",
-			Handler:    _Service_RevolkToken_Handler,
+			MethodName: "RevokeToken",
+			Handler:    _Service_RevokeToken_Handler,
 		},
 		{
 			MethodName: "ValidateToken",

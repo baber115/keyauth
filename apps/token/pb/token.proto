@@ -9,7 +9,7 @@ service Service {
     // 颁发Token(Login)
     rpc IssueToken(IssueTokenRequest) returns(Token);
     // 撤销Token(Logout)
-    rpc RevolkToken(RevolkTokenRequest) returns(Token);
+    rpc RevokeToken(RevokeTokenRequest) returns(Token);
 
     // 校验Token的接口(内部服务使用)
     rpc ValidateToken(ValidateTokenRequest) returns(Token);
@@ -109,7 +109,7 @@ message DescribeTokenRequest {
     string access_token = 1;
 }
 
-message RevolkTokenRequest {
+message RevokeTokenRequest {
     // access token
     // @gotags: json:"access_token"
     string access_token = 1;

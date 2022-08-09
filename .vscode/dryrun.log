@@ -1,0 +1,6 @@
+make.exe --dry-run --always-make --keep-going --print-directory
+make.exe: Entering directory 'e:/go_project/src/keyauth'
+go mod tidy
+go build -a -o dist/ -ldflags "-s -w" -ldflags "-X '""codeup.aliyun.com/baber/go/keyauth"/version".GIT_BRANCH=master' -X '""codeup.aliyun.com/baber/go/keyauth"/version".GIT_COMMIT=55eec550c91e4a2ee18e1ca194d2dd7c912ac26c' -X '""codeup.aliyun.com/baber/go/keyauth"/version".BUILD_TIME=2022-08-09 12:10:51' -X '""codeup.aliyun.com/baber/go/keyauth"/version".GO_VERSION=go1.18.2 windows/amd64'" 
+make.exe: Leaving directory 'e:/go_project/src/keyauth'
+ 

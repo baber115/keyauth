@@ -9,9 +9,24 @@
   + "_id"是内置的Bson Tag，类似MySQL里的主键ID，_(下划线)：代表的倒序索引
   + 通过DB对象的Collection对象进行CRUD操作 
 
+## 对接注册中心
+注册中心使用的mcenter服务: https://github.com/infraboard/mcenter
+
+1.配置MongoDB
+```shell
+use mcenter
+db.createUser({user: "mcenter", pwd: "123456", roles: [{ role: "dbOwner", db: "mcenter" }]})
+```
+
+2.初始化内置服务
+```shell
+make init
+```
+在cmd/start.go里，把Keyauth服务注册到注册中心
+
 ## 架构图
 
-## 项目说明
+## 项目说明 
 
 ```
 ├── protocol                       # 脚手架功能: rpc / http 功能加载

@@ -37,11 +37,22 @@ func (h *handler) Version() string {
 func (h *handler) Registry(ws *restful.WebService) {
 	tags := []string{"tokens"}
 
-	ws.Route(ws.POST("").To(h.IssueToken).
+	ws.Route(ws.POST("/issue").To(h.IssueToken).
 		Doc("create a token").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(token.IssueTokenRequest{}).
 		Writes(response.NewData(token.Token{})))
+
+	ws.Route(ws.GET("/validate").To(h.ValidateToken).
+		Doc("validate token").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Metadata("action", "get"))
+
+	ws.Route(ws.POST("/revoke").To(h.RevokeToken).
+		Doc("revoke token").
+		Param(ws.PathParameter("id", "identifier of the user").DataType("integer").DefaultValue("1")).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Metadata("action", "delete"))
 }
 
 func init() {
