@@ -1,7 +1,9 @@
 package rpc
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"codeup.aliyun.com/baber/go/keyauth/apps/book"
 	"codeup.aliyun.com/baber/go/keyauth/apps/token"
@@ -33,11 +35,17 @@ func C() *ClientSet {
 func NewClient(conf *rpc.Config) (*ClientSet, error) {
 	zap.DevelopmentSetup()
 	log := zap.L()
+	fmt.Println(conf)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
 	// resolver 进行解析的时候 需要mcenter客户端实例已经初始化
-	conn, err := grpc.Dial(
+	conn, err := grpc.DialContext(
+		ctx,
 		fmt.Sprintf("%s://%s", resolver.Scheme, "keyauth"), // Dial to "mcenter://keyauth"
+		grpc.WithPerRPCCredentials(auth.NewAuthentication("a", "b")),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithPerRPCCredentials(auth.NewAuthentication(conf.ClientID, conf.ClientSecret)),
 		//grpc.WithBlock(),
 	)
 	if err != nil {
@@ -50,7 +58,7 @@ func NewClient(conf *rpc.Config) (*ClientSet, error) {
 	}, nil
 }
 
-// Client 客户端
+// Client 客户端N
 type ClientSet struct {
 	conn *grpc.ClientConn
 	log  logger.Logger
